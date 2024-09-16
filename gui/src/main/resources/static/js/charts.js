@@ -1,7 +1,20 @@
 async function fetchData() {
     const response = await fetch('/api/show/data');
     const data = await response.json();
+    console.log("Fetched Data:", data); // Debugging output
     return data;
+}
+
+async function updateFooter(logs) {
+    const logElement = document.getElementById('log');
+
+    if (logs && logs.length > 0) {
+        const latestLog = logs[logs.length - 1];
+        const timestamp = new Date(latestLog.timestamp).toLocaleString();
+        logElement.textContent = `Last Update: ${timestamp} - ${latestLog.log}`;
+    } else {
+        logElement.textContent = 'No logs available';
+    }
 }
 
 let cpuChart, ramChart, diskChart, networkChart;
@@ -49,7 +62,7 @@ async function createCharts() {
             labels: data.map(d => new Date(d.timestamp).toLocaleTimeString()),
             datasets: [{
                 label: 'RAM Usage (%)',
-                data: data.map(d => (d.ramUsedMB / d.ramTotalMB) * 100),
+                data: data.map(d => d.ramUsage),
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 fill: false,
@@ -77,7 +90,7 @@ async function createCharts() {
             labels: data.map(d => new Date(d.timestamp).toLocaleTimeString()),
             datasets: [{
                 label: 'Disk Usage (%)',
-                data: data.map(d => (d.diskUsedMB / d.diskTotalMB) * 100),
+                data: data.map(d => d.diskUsage),
                 borderColor: 'rgba(255, 206, 86, 1)',
                 backgroundColor: 'rgba(255, 206, 86, 0.2)',
                 fill: false,
@@ -104,13 +117,13 @@ async function createCharts() {
         data: {
             labels: data.map(d => new Date(d.timestamp).toLocaleTimeString()),
             datasets: [{
-                label: 'Network Received (KB)',
+                label: 'Network Received (Kb)',
                 data: data.map(d => d.networkReceivedKB),
                 borderColor: 'rgba(153, 102, 255, 1)',
                 backgroundColor: 'rgba(153, 102, 255, 0.2)',
                 fill: false,
             }, {
-                label: 'Network Sent (KB)',
+                label: 'Network Sent (Kb)',
                 data: data.map(d => d.networkSentKB),
                 borderColor: 'rgba(255, 99, 132, 1)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -123,7 +136,7 @@ async function createCharts() {
                 y: {
                     title: {
                         display: true,
-                        text: 'Network Usage (KB)'
+                        text: 'Network Usage (Kb)'
                     }
                 }
             }
@@ -133,6 +146,7 @@ async function createCharts() {
 
 async function updateCharts() {
     const data = await fetchData();
+    console.log("Updating Charts with Data:", data); // Debugging output
 
     // Update CPU Chart
     cpuChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
@@ -141,12 +155,12 @@ async function updateCharts() {
 
     // Update RAM Chart
     ramChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    ramChart.data.datasets[0].data = data.map(d => (d.ramUsedMB / d.ramTotalMB) * 100);
+    ramChart.data.datasets[0].data = data.map(d => d.ramUsage);
     ramChart.update();
 
     // Update Disk Chart
     diskChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    diskChart.data.datasets[0].data = data.map(d => (d.diskUsedMB / d.diskTotalMB) * 100);
+    diskChart.data.datasets[0].data = data.map(d => d.diskUsage);
     diskChart.update();
 
     // Update Network Chart
@@ -154,6 +168,8 @@ async function updateCharts() {
     networkChart.data.datasets[0].data = data.map(d => d.networkReceivedKB);
     networkChart.data.datasets[1].data = data.map(d => d.networkSentKB);
     networkChart.update();
+
+    updateFooter()
 }
 
 // Initialize the charts

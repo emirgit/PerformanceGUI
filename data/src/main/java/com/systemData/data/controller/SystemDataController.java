@@ -13,10 +13,12 @@ public class SystemDataController {
 
     private final SystemDataService systemDataService;
 
-    private NetworkUsage networkUsage = new NetworkUsage(0, 0);
+    private NetworkUsage networkUsage;
     @Autowired
     public SystemDataController(SystemDataService systemDataService) {
         this.systemDataService = systemDataService;
+        networkUsage = new NetworkUsage(0, 0);
+        systemDataService.initializeNetworkUsage(networkUsage);
     }
 
     @Scheduled(fixedRate = 1000) // Execute every 1000 milliseconds

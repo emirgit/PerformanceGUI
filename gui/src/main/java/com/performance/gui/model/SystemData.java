@@ -22,11 +22,10 @@ public class SystemData {
 
     private LocalDateTime timestamp;
     private double cpuUsage;
-    private long ramUsedMB;
-    private long ramTotalMB;
-    private long diskUsedMB;
-    private long diskTotalMB;
+    private double ramUsage;
+    private double diskUsage;
     private long networkReceivedKB;
     private long networkSentKB;
+    private String log;
 
 }

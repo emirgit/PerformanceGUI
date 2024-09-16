@@ -2,27 +2,27 @@ package com.systemData.data.model;
 
 public class NetworkUsage {
 
-    private long networkReceivedKB;
-    private long networkSentKB;
+    private long networkReceivedKb;
+    private long networkSentKb;
 
-    public NetworkUsage(long networkReceivedKB, long networkSentKB) {
-        this.networkReceivedKB = networkReceivedKB;
-        this.networkSentKB = networkSentKB;
+    public NetworkUsage(long networkReceivedKb, long networkSentKb) {
+        this.networkReceivedKb = networkReceivedKb;
+        this.networkSentKb = networkSentKb;
     }
 
-    public long getNetworkReceivedKB() {
-        return networkReceivedKB;
+    public long getNetworkReceivedKb() {
+        return networkReceivedKb;
     }
 
-    public void setNetworkReceivedKB(long networkReceivedKB) {
-        this.networkReceivedKB = networkReceivedKB;
+    public void setNetworkReceivedKb(long networkReceivedKb) {
+        this.networkReceivedKb = networkReceivedKb;
     }
 
-    public long getNetworkSentKB() {
-        return networkSentKB;
+    public long getNetworkSentKb() {
+        return networkSentKb;
     }
 
-    public void setNetworkSentKB(long networkSentKB) {
-        this.networkSentKB = networkSentKB;
+    public void setNetworkSentKb(long networkSentKb) {
+        this.networkSentKb = networkSentKb;
     }
 }

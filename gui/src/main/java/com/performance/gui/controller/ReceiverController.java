@@ -20,12 +20,6 @@ public class ReceiverController {
         this.systemDataService = systemDataService;
     }
 
-
-    @GetMapping("/hello")
-    public String sayHello() {
-        return "Hello, World!";
-    }
-
     @PostMapping("/api/performance")
     public ResponseEntity<SystemData> receiveData(@RequestBody String data) {
         // Delegate data processing and saving to the service

@@ -29,23 +29,21 @@ public class SystemDataService {
     public SystemData convertStringToData(String data) {
         // Parse the data
         double cpuUsage = parseDoubleValue(data, "CPU: ([\\d.]+) %");
-        long ramUsedMB = parseLongValue(data, "RAM: (\\d+) MB /");
-        long ramTotalMB = parseLongValue(data, "RAM: \\d+ MB / (\\d+) MB");
-        long diskUsedMB = parseLongValue(data, "DISK: (\\d+) MB /");
-        long diskTotalMB = parseLongValue(data, "DISK: \\d+ MB / (\\d+) MB");
+        double ramUsage = parseDoubleValue(data, "RAM: ([\\d.]+) %");
+        double diskUsage = parseDoubleValue(data, "DISK: ([\\d.]+) %");
         long networkReceivedKB = parseLongValue(data, "NETWORK: (\\d+) KB Received");
         long networkSentKB = parseLongValue(data, "NETWORK: \\d+ KB Received / (\\d+) KB Sent");
+        String log = parseLogData(data, "LOG: (.+)");
 
         // Create and save the SystemData object
         SystemData systemData = new SystemData();
         systemData.setTimestamp(LocalDateTime.now());
         systemData.setCpuUsage(cpuUsage);
-        systemData.setRamUsedMB(ramUsedMB);
-        systemData.setRamTotalMB(ramTotalMB);
-        systemData.setDiskUsedMB(diskUsedMB);
-        systemData.setDiskTotalMB(diskTotalMB);
+        systemData.setRamUsage(ramUsage);
+        systemData.setDiskUsage(diskUsage);
         systemData.setNetworkReceivedKB(networkReceivedKB);
         systemData.setNetworkSentKB(networkSentKB);
+        systemData.setLog(log);
 
         return systemData;
     }
@@ -81,6 +79,22 @@ public class SystemDataService {
             return Long.parseLong(matcher.group(1));
         }
         return 0; // Default value if pattern is not found
+    }
+    public String parseLogData(String data, String pattern) {
+
+        // Create a Pattern object
+        Pattern regexPattern = Pattern.compile(pattern);
+
+        // Create matcher object
+        Matcher matcher = regexPattern.matcher(data);
+
+        if (matcher.find()) {
+            // Extract log message
+            return matcher.group(1);
+        }
+
+        // Return a default message or empty string if pattern is not found
+        return "";
     }
 }
 
