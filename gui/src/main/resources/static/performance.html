@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance GUI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="header">
+    <h1>Performance GUI</h1>
+</div>
+
+<div class="charts-container">
+    <div class="chart">
+        <canvas id="cpuChart"></canvas>
+    </div>
+    <div class="chart">
+        <canvas id="ramChart"></canvas>
+    </div>
+    <div class="chart">
+        <canvas id="diskChart"></canvas>
+    </div>
+    <div class="chart">
+        <canvas id="networkChart"></canvas>
+    </div>
+</div>
+
+<div class="footer">
+    <p id="log">Logs</p>
+</div>
+
+<script src="js/charts.js"></script>
+</body>
+</html>

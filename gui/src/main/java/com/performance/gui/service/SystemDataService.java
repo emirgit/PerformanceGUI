@@ -1,0 +1,86 @@
+package com.performance.gui.service;
+
+import com.performance.gui.model.SystemData;
+import com.performance.gui.repository.SystemDataRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+@Service
+public class SystemDataService {
+
+    private final SystemDataRepository systemDataRepository;
+
+    private Queue<SystemData> dataQueue;
+
+    @Autowired
+    public SystemDataService(SystemDataRepository systemDataRepository) {
+        this.systemDataRepository = systemDataRepository;
+        dataQueue = new LinkedList<>();
+    }
+
+    public SystemData convertStringToData(String data) {
+        // Parse the data
+        double cpuUsage = parseDoubleValue(data, "CPU: ([\\d.]+) %");
+        long ramUsedMB = parseLongValue(data, "RAM: (\\d+) MB /");
+        long ramTotalMB = parseLongValue(data, "RAM: \\d+ MB / (\\d+) MB");
+        long diskUsedMB = parseLongValue(data, "DISK: (\\d+) MB /");
+        long diskTotalMB = parseLongValue(data, "DISK: \\d+ MB / (\\d+) MB");
+        long networkReceivedKB = parseLongValue(data, "NETWORK: (\\d+) KB Received");
+        long networkSentKB = parseLongValue(data, "NETWORK: \\d+ KB Received / (\\d+) KB Sent");
+
+        // Create and save the SystemData object
+        SystemData systemData = new SystemData();
+        systemData.setTimestamp(LocalDateTime.now());
+        systemData.setCpuUsage(cpuUsage);
+        systemData.setRamUsedMB(ramUsedMB);
+        systemData.setRamTotalMB(ramTotalMB);
+        systemData.setDiskUsedMB(diskUsedMB);
+        systemData.setDiskTotalMB(diskTotalMB);
+        systemData.setNetworkReceivedKB(networkReceivedKB);
+        systemData.setNetworkSentKB(networkSentKB);
+
+        return systemData;
+    }
+
+    public List<SystemData> processAndSaveData(SystemData systemData) {
+
+        //Process the Data
+        if (dataQueue.size() >= 600)
+            dataQueue.remove();
+
+        dataQueue.add(systemData);
+
+        // save the data to database
+        System.out.println(systemData);
+        systemDataRepository.save(systemData);
+
+        return dataQueue.stream().collect(Collectors.toList());
+    }
+
+    private double parseDoubleValue(String data, String pattern) {
+        Pattern regexPattern = Pattern.compile(pattern);
+        Matcher matcher = regexPattern.matcher(data);
+        if (matcher.find()) {
+            return Double.parseDouble(matcher.group(1));
+        }
+        return 0; // Default value if pattern is not found
+    }
+
+    private long parseLongValue(String data, String pattern) {
+        Pattern regexPattern = Pattern.compile(pattern);
+        Matcher matcher = regexPattern.matcher(data);
+        if (matcher.find()) {
+            return Long.parseLong(matcher.group(1));
+        }
+        return 0; // Default value if pattern is not found
+    }
+}
+
