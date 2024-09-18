@@ -18,6 +18,11 @@ public class SystemDataService {
 
     private final SystemDataRepository systemDataRepository;
 
+    private static final double DEFAULT_VALUE = -1;
+    private static final long L_DEFAULT_VALUE = -1;
+
+    private static final String DEFAULT_STRING = "";
+
     private Queue<SystemData> dataQueue;
 
     @Autowired
@@ -31,8 +36,8 @@ public class SystemDataService {
         double cpuUsage = parseDoubleValue(data, "CPU: ([\\d.]+) %");
         double ramUsage = parseDoubleValue(data, "RAM: ([\\d.]+) %");
         double diskUsage = parseDoubleValue(data, "DISK: ([\\d.]+) %");
-        long networkReceivedKB = parseLongValue(data, "NETWORK: (\\d+) KB Received");
-        long networkSentKB = parseLongValue(data, "NETWORK: \\d+ KB Received / (\\d+) KB Sent");
+        long networkReceivedKB = parseLongValue(data, "NETWORK: (\\d+) Kb Received");
+        long networkSentKB = parseLongValue(data, "NETWORK: \\d+ Kb Received / (\\d+) Kb Sent");
         String log = parseLogData(data, "LOG: (.+)");
 
         // Create and save the SystemData object
@@ -69,7 +74,7 @@ public class SystemDataService {
         if (matcher.find()) {
             return Double.parseDouble(matcher.group(1));
         }
-        return 0; // Default value if pattern is not found
+        return DEFAULT_VALUE; // Default value if pattern is not found
     }
 
     private long parseLongValue(String data, String pattern) {
@@ -78,7 +83,7 @@ public class SystemDataService {
         if (matcher.find()) {
             return Long.parseLong(matcher.group(1));
         }
-        return 0; // Default value if pattern is not found
+        return L_DEFAULT_VALUE;// Default value if pattern is not found
     }
     public String parseLogData(String data, String pattern) {
 
@@ -94,7 +99,7 @@ public class SystemDataService {
         }
 
         // Return a default message or empty string if pattern is not found
-        return "";
+        return DEFAULT_STRING;
     }
 }
 

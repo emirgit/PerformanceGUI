@@ -2,7 +2,6 @@ package com.systemData.data.service;
 
 import com.sun.management.OperatingSystemMXBean;
 import com.systemData.data.model.NetworkUsage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import oshi.SystemInfo;
@@ -18,69 +17,101 @@ import java.util.Locale;
 @Service
 public class SystemDataService {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private static final double DEFAULT_VALUE = -1;
+    private static final long L_DEFAULT_VALUE = -1;
 
-    private long counter = 0;
+    private static final String cpuErrorMessage = "Error retrieving CPU usage. ";
+    private static final String memoryErrorMessage = "Error retrieving Memory usage. ";
+    private static final String diskErrorMessage = "Error retrieving Disk usage. ";
+    private static final String networkErrorMessage = "Error retrieving Network usage. ";
 
     private final SystemInfo systemInfo = new SystemInfo();
     private final HardwareAbstractionLayer hardware = systemInfo.getHardware();
     private final GlobalMemory memory = hardware.getMemory();
-
     private final List<NetworkIF> networkInterfaces = hardware.getNetworkIFs();
 
-    private final String cpuErrorMessage = "Error retrieving CPU usage.\n";
-    private final String memoryErrorMessage = "Error retrieving Memory usage.\n";
-    private final String diskErrorMessage = "Error retrieving Disk usage.\n";
-    private final String networkErrorMessage = "Error retrieving Network usage.\n";
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private long counter = 0;
+
+    private boolean simulateCpuCommand = false;
+    private boolean simulateMemoryCommand = false;
+    private boolean simulateDiskCommand = false;
+    private boolean simulateNetworkCommand = false;
+
+    private boolean isNetworkInitiliazed = false;
 
     public void sendSystemData(NetworkUsage prevNetworkUsage) {
 
         StringBuilder log = new StringBuilder();
-        double cpuUsage = -10;
-        double ramUsage = -10;
-        double diskUsage = - 10;
+        double cpuUsage = DEFAULT_VALUE;
+        double ramUsage = DEFAULT_VALUE;
+        double diskUsage = DEFAULT_VALUE;
         NetworkUsage curNetworkUsage = new NetworkUsage(0, 0);
 
-        try {
-            cpuUsage = getCpuUsage();
-        }
-        catch (Exception ex) {
+        if (simulateCpuCommand) {
             log.append(cpuErrorMessage);
-            cpuUsage = -1;
+        } else {
+            try {
+                cpuUsage = getCpuUsage();
+            } catch (Exception ex) {
+                log.append(cpuErrorMessage);
+                cpuUsage = DEFAULT_VALUE;
+            }
         }
 
-        try {
-            ramUsage = getMemoryUsageRatio();
-        }
-        catch (Exception ex) {
+        if (simulateMemoryCommand) {
             log.append(memoryErrorMessage);
-            ramUsage = -1;
+        } else {
+            try {
+                ramUsage = getMemoryUsageRatio();
+            } catch (Exception ex) {
+                log.append(memoryErrorMessage);
+                ramUsage = DEFAULT_VALUE;
+            }
         }
 
-        try {
-            diskUsage = getDiskUsageRatio();
-        }
-        catch (Exception ex) {
+        if (simulateDiskCommand) {
             log.append(diskErrorMessage);
-            diskUsage = -1;
+        } else {
+            try {
+                diskUsage = getDiskUsageRatio();
+            } catch (Exception ex) {
+                log.append(diskErrorMessage);
+                diskUsage = DEFAULT_VALUE;
+            }
         }
 
-
-        try {
-            //call by reference
-            getNetworkUsage(prevNetworkUsage, curNetworkUsage);
+        if (simulateNetworkCommand) {
+            log.append("Error retrieving Network usage.\n");
+            curNetworkUsage.setNetworkSentKb(L_DEFAULT_VALUE);
+            curNetworkUsage.setNetworkReceivedKb(L_DEFAULT_VALUE);
+            isNetworkInitiliazed = false;
         }
-        catch (Exception ex) {
-            log.append(networkErrorMessage);
-            curNetworkUsage = new NetworkUsage(-1, -1);
+        else {
+            try {
+                //call by reference
+                if (isNetworkInitiliazed) {
+                    initializeNetworkUsage(prevNetworkUsage);
+                    isNetworkInitiliazed = true;
+                    curNetworkUsage.setNetworkSentKb(L_DEFAULT_VALUE);
+                    curNetworkUsage.setNetworkReceivedKb(L_DEFAULT_VALUE);
+                }
+                else {
+                    getNetworkUsage(prevNetworkUsage, curNetworkUsage);
+                }
+            } catch (Exception ex) {
+                log.append(networkErrorMessage);
+                isNetworkInitiliazed = false;
+                curNetworkUsage.setNetworkSentKb(L_DEFAULT_VALUE);
+                curNetworkUsage.setNetworkReceivedKb(L_DEFAULT_VALUE);
+            }
         }
-
         String payload = String.format(Locale.US,
                 "CPU: %.2f %%\n" +
                         "RAM: %.2f %%\n" +
                         "DISK: %.2f %%\n" +
-                        "NETWORK: %d KB Received / %d KB Sent\n" +
+                        "NETWORK: %d Kb Received / %d Kb Sent\n" +
                         "LOG: %s",
                 cpuUsage,
                 ramUsage,
@@ -141,6 +172,38 @@ public class SystemDataService {
             networkUsage.setNetworkReceivedKb(networkUsage.getNetworkReceivedKb() + netIf.getBytesRecv() / 128);
             networkUsage.setNetworkSentKb(networkUsage.getNetworkSentKb() + netIf.getBytesSent() / 128);
         }
+    }
+
+    public void startCpu() {
+        this.simulateCpuCommand = false;
+    }
+
+    public void stopCpu() {
+        this.simulateCpuCommand = true;
+    }
+
+    public void startMemory() {
+        this.simulateMemoryCommand = false;
+    }
+
+    public void stopMemory() {
+        this.simulateMemoryCommand = true;
+    }
+
+    public void startDisk() {
+        this.simulateDiskCommand = false;
+    }
+
+    public void stopDisk() {
+        this.simulateDiskCommand = true;
+    }
+
+    public void startNetwork() {
+        this.simulateNetworkCommand = false;
+    }
+
+    public void stopNetwork() {
+        this.simulateNetworkCommand = true;
     }
 
 }

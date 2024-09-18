@@ -1,21 +1,9 @@
 async function fetchData() {
     const response = await fetch('/api/show/data');
     const data = await response.json();
-    console.log("Fetched Data:", data); // Debugging output
     return data;
 }
 
-async function updateFooter(logs) {
-    const logElement = document.getElementById('log');
-
-    if (logs && logs.length > 0) {
-        const latestLog = logs[logs.length - 1];
-        const timestamp = new Date(latestLog.timestamp).toLocaleString();
-        logElement.textContent = `Last Update: ${timestamp} - ${latestLog.log}`;
-    } else {
-        logElement.textContent = 'No logs available';
-    }
-}
 
 let cpuChart, ramChart, diskChart, networkChart;
 
@@ -146,30 +134,55 @@ async function createCharts() {
 
 async function updateCharts() {
     const data = await fetchData();
-    console.log("Updating Charts with Data:", data); // Debugging output
+
+    // Filter out data points with a value of -1 for each metric
+    const filteredData = data.map(d => {
+        return {
+            timestamp: d.timestamp,
+            cpuUsage: d.cpuUsage === -1 ? null : d.cpuUsage,
+            ramUsage: d.ramUsage === -1 ? null : d.ramUsage,
+            diskUsage: d.diskUsage === -1 ? null : d.diskUsage,
+            networkReceivedKB: d.networkReceivedKB === -1 ? null : d.networkReceivedKB,
+            networkSentKB: d.networkSentKB === -1 ? null : d.networkSentKB,
+            log: d.log
+        };
+    });
 
     // Update CPU Chart
-    cpuChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    cpuChart.data.datasets[0].data = data.map(d => d.cpuUsage);
+    cpuChart.data.labels = filteredData.map(d => new Date(d.timestamp).toLocaleTimeString());
+    cpuChart.data.datasets[0].data = filteredData.map(d => d.cpuUsage);
     cpuChart.update();
 
     // Update RAM Chart
-    ramChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    ramChart.data.datasets[0].data = data.map(d => d.ramUsage);
+    ramChart.data.labels = filteredData.map(d => new Date(d.timestamp).toLocaleTimeString());
+    ramChart.data.datasets[0].data = filteredData.map(d => d.ramUsage);
     ramChart.update();
 
     // Update Disk Chart
-    diskChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    diskChart.data.datasets[0].data = data.map(d => d.diskUsage);
+    diskChart.data.labels = filteredData.map(d => new Date(d.timestamp).toLocaleTimeString());
+    diskChart.data.datasets[0].data = filteredData.map(d => d.diskUsage);
     diskChart.update();
 
     // Update Network Chart
-    networkChart.data.labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-    networkChart.data.datasets[0].data = data.map(d => d.networkReceivedKB);
-    networkChart.data.datasets[1].data = data.map(d => d.networkSentKB);
+    networkChart.data.labels = filteredData.map(d => new Date(d.timestamp).toLocaleTimeString());
+    networkChart.data.datasets[0].data = filteredData.map(d => d.networkReceivedKB);
+    networkChart.data.datasets[1].data = filteredData.map(d => d.networkSentKB);
     networkChart.update();
 
-    updateFooter()
+    // Update footer with the latest log
+    updateFooter(filteredData);
+}
+
+async function updateFooter(logs) {
+    const logElement = document.getElementById('log');
+
+    console.log("logElement:", logElement);
+
+    if (logElement) {
+        // Find the latest log entry from the filtered logs
+        const latestLog = logs[logs.length - 1]?.log || 'No logs available';
+        logElement.textContent = latestLog;
+    }
 }
 
 // Initialize the charts
