@@ -2,6 +2,8 @@ package com.performance.gui.service;
 
 import com.performance.gui.model.SystemData;
 import com.performance.gui.repository.SystemDataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class SystemDataService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SystemDataService.class);
 
     private final SystemDataRepository systemDataRepository;
 
@@ -40,6 +44,9 @@ public class SystemDataService {
         long networkSentKB = parseLongValue(data, "NETWORK: \\d+ Kb Received / (\\d+) Kb Sent");
         String log = parseLogData(data, "LOG: (.+)");
 
+        if (!log.isEmpty())
+            logger.info(log);
+
         // Create and save the SystemData object
         SystemData systemData = new SystemData();
         systemData.setTimestamp(LocalDateTime.now());
@@ -62,8 +69,9 @@ public class SystemDataService {
         dataQueue.add(systemData);
 
         // save the data to database
-        System.out.println(systemData);
         systemDataRepository.save(systemData);
+        logger.trace(systemData +  "is saved to Database ");
+
 
         return dataQueue.stream().collect(Collectors.toList());
     }
@@ -74,6 +82,7 @@ public class SystemDataService {
         if (matcher.find()) {
             return Double.parseDouble(matcher.group(1));
         }
+
         return DEFAULT_VALUE; // Default value if pattern is not found
     }
 

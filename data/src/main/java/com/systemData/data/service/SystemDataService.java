@@ -2,6 +2,8 @@ package com.systemData.data.service;
 
 import com.sun.management.OperatingSystemMXBean;
 import com.systemData.data.model.NetworkUsage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import oshi.SystemInfo;
@@ -16,6 +18,8 @@ import java.util.Locale;
 
 @Service
 public class SystemDataService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SystemDataService.class);
 
     private static final double DEFAULT_VALUE = -1;
     private static final long L_DEFAULT_VALUE = -1;
@@ -50,39 +54,46 @@ public class SystemDataService {
         NetworkUsage curNetworkUsage = new NetworkUsage(0, 0);
 
         if (simulateCpuCommand) {
+            logger.info("CPU data sending is closed !");
             log.append(cpuErrorMessage);
         } else {
             try {
                 cpuUsage = getCpuUsage();
             } catch (Exception ex) {
+                logger.info("Error while sending CPU data");
                 log.append(cpuErrorMessage);
                 cpuUsage = DEFAULT_VALUE;
             }
         }
 
         if (simulateMemoryCommand) {
+            logger.info("Memory data sending is closed !");
             log.append(memoryErrorMessage);
         } else {
             try {
                 ramUsage = getMemoryUsageRatio();
             } catch (Exception ex) {
+                logger.info("Error while sending Memory data");
                 log.append(memoryErrorMessage);
                 ramUsage = DEFAULT_VALUE;
             }
         }
 
         if (simulateDiskCommand) {
+            logger.info("Disk data sending is closed !");
             log.append(diskErrorMessage);
         } else {
             try {
                 diskUsage = getDiskUsageRatio();
             } catch (Exception ex) {
+                logger.info("Error while sending Disk data");
                 log.append(diskErrorMessage);
                 diskUsage = DEFAULT_VALUE;
             }
         }
 
         if (simulateNetworkCommand) {
+            logger.info("Network data sending is closed !");
             log.append("Error retrieving Network usage.\n");
             curNetworkUsage.setNetworkSentKb(L_DEFAULT_VALUE);
             curNetworkUsage.setNetworkReceivedKb(L_DEFAULT_VALUE);
@@ -101,6 +112,7 @@ public class SystemDataService {
                     getNetworkUsage(prevNetworkUsage, curNetworkUsage);
                 }
             } catch (Exception ex) {
+                logger.info("Error while sending Network data");
                 log.append(networkErrorMessage);
                 isNetworkInitiliazed = false;
                 curNetworkUsage.setNetworkSentKb(L_DEFAULT_VALUE);
@@ -126,7 +138,7 @@ public class SystemDataService {
         counter += 1;
         //Using RestTemplate to send data
         restTemplate.postForObject(otherMicroserviceUrl, payload, String.class);
-        System.out.println(counter + ". Data sent to other microservice: \n" + payload);
+        logger.trace(counter + ". Data sent to other microservice: \n" + payload);
     }
 
     private double getCpuUsage() {
