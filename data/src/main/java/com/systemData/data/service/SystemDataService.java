@@ -20,7 +20,9 @@ import java.util.Locale;
  * SystemDataService is the service handles all logic
  * the default values accepted as -1
  * It uses oshi for network datas, OSMXBean for memory and cpu, File for disk
- * If some exception occured when retrieve datas, it assign default value to datas
+ * If some exception occured when retrieve datas, it assigns default value to datas
+ * the posted data is a String to be parsed in Microservice which gets datas
+ * The datas will be posted to "http://localhost:8081/api/performance" URL
  */
 @Service
 public class SystemDataService {
@@ -51,8 +53,17 @@ public class SystemDataService {
 
     private boolean isNetworkInitiliazed = false;
 
+    /**
+     *
+     * @param prevNetworkUsage
+     * CPU : 0% - 100%
+     * CPU : 0% - 100%
+     * CPU : 0% - 100%
+     * Network : 0 Kb to undetermined Kb
+     */
     public void sendSystemData(NetworkUsage prevNetworkUsage) {
 
+        //String builder was used for optimazation instead of directly String
         StringBuilder log = new StringBuilder();
         double cpuUsage = DEFAULT_VALUE;
         double ramUsage = DEFAULT_VALUE;
@@ -125,6 +136,7 @@ public class SystemDataService {
                 curNetworkUsage.setNetworkReceivedKb(L_DEFAULT_VALUE);
             }
         }
+        //The format of sended String is like that
         String payload = String.format(Locale.US,
                 "CPU: %.2f %%\n" +
                         "RAM: %.2f %%\n" +
@@ -192,6 +204,7 @@ public class SystemDataService {
         }
     }
 
+    //Reflection methods
     public void startCpu() {
         this.simulateCpuCommand = false;
     }
