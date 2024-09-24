@@ -1,5 +1,8 @@
 package com.systemData.data.model;
 
+/**
+ * Basic NetworkUsage class to keep the data of network
+ */
 public class NetworkUsage {
 
     private long networkReceivedKb;

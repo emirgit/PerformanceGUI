@@ -16,6 +16,12 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * SystemDataService is the service handles all logic
+ * the default values accepted as -1
+ * It uses oshi for network datas, OSMXBean for memory and cpu, File for disk
+ * If some exception occured when retrieve datas, it assign default value to datas
+ */
 @Service
 public class SystemDataService {
 

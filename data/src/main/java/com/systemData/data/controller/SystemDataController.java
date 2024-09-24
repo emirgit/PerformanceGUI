@@ -15,6 +15,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * SystemDataController
+ * It is controller for the url api/system
+ * It uses log4j2 to log the exceptions
+ * It uses oshi library to take network datas
+ */
 @RestController
 @RequestMapping("/api/system")
 public class SystemDataController {
@@ -28,6 +34,13 @@ public class SystemDataController {
 
 
     private NetworkUsage networkUsage;
+
+    /**
+     *
+     * @param systemDataService
+     * constructor dependency injection
+     * It instantiates Network usage with 0 to get initial state of Networks
+     */
     @Autowired
     public SystemDataController(SystemDataService systemDataService) {
         this.systemDataService = systemDataService;
@@ -35,6 +48,11 @@ public class SystemDataController {
         systemDataService.initializeNetworkUsage(networkUsage);
     }
 
+    /**
+     * triggerDataSending methods
+     * posting the datas in 1 second interval.
+     * @return information
+     */
     @Scheduled(fixedRate = 1000) // Execute every 1000 milliseconds
     public String triggerDataSending() {
 
@@ -43,6 +61,13 @@ public class SystemDataController {
         return "Data sending triggered";
     }
 
+    /**
+     * checkCommands takes the parameter that posted to /api/system/command part
+     * @param command
+     *
+     * It checks whether the parameter is v alid or not by the given rules (field of the class)
+     * @return information
+     */
     @PostMapping("/command")
     public String checkCommands(@RequestParam String command) {
 
@@ -79,6 +104,12 @@ public class SystemDataController {
         return "Test command executed: " + command;
     }
 
+    /**
+     * findMethod uses for ease
+     * It uses reflection feature in Java
+     * @param methodName
+     * @return
+     */
     private Method findMethod(String methodName) {
         try {
             return SystemDataService.class.getMethod(methodName);
