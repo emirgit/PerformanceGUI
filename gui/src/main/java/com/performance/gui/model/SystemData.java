@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * SystemData class to store CPU, Memory, Disk, and Network Usage
+ * it also includes the logs
+ */
 @Entity
 @Data
 @AllArgsConstructor

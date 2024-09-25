@@ -15,6 +15,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * SystemDataService is the Service that includes all the Data Logic
+ * It has a Queue to better performance cause It will have 10 minutes of the datas
+ * that's mean 600 SystemData Object and A data will be changed for per minute
+ */
 @Service
 public class SystemDataService {
 
@@ -29,12 +34,22 @@ public class SystemDataService {
 
     private Queue<SystemData> dataQueue;
 
+    /**
+     * Constructor dependency Injection
+     * @param systemDataRepository
+     */
     @Autowired
     public SystemDataService(SystemDataRepository systemDataRepository) {
         this.systemDataRepository = systemDataRepository;
         dataQueue = new LinkedList<>();
     }
 
+    /**
+     * @param data
+     * @return SystemData
+     * It parses the given String(data) by the sendings rule
+     *
+     */
     public SystemData convertStringToData(String data) {
         // Parse the data
         double cpuUsage = parseDoubleValue(data, "CPU: ([\\d.]+) %");
@@ -60,6 +75,12 @@ public class SystemDataService {
         return systemData;
     }
 
+    /**
+     * @param systemData
+     * @return
+     * It applies the logic of removing and adding the SystemData object by the given rule
+     * and after return the queue as the list of objects
+     */
     public List<SystemData> processAndSaveData(SystemData systemData) {
 
         //Process the Data
